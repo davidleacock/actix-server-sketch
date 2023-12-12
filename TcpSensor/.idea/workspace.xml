@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fc78a2bf-57a8-4e78-bdd1-ba3e140d4001" name="Changes" comment="remove file">
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/.rustc_info.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/CACHEDIR.TAG" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.cargo-lock" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-9a1a15455cdd778b/invoked.timestamp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-9a1a15455cdd778b/test-bin-ControllerServer" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-9a1a15455cdd778b/test-bin-ControllerServer.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-ef781fffe5ddfca7/bin-ControllerServer" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-ef781fffe5ddfca7/bin-ControllerServer.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../ControllerServer/target/debug/.fingerprint/ControllerServer-ef781fffe5ddfca7/invoked.timestamp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ControllerServer/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/../ControllerServer/Cargo.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../ControllerServer/src/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/../ControllerServer/src/main.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="ka90c6r9" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 7
+}]]></component>
+  <component name="ProjectId" id="2ZQPs81GnSFX3KVBu7O8Xm1LPhm" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "last_opened_file_path": "/Users/davidleacock/research/actix-server-sketch/TcpSensor/Cargo.toml",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager" selected="Cargo.Run TcpSensor">
+    <configuration name="Run TcpSensor" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="command" value="run --package TcpSensor --bin TcpSensor" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test TcpSensor" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
+      <option name="command" value="test --workspace" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fc78a2bf-57a8-4e78-bdd1-ba3e140d4001" name="Changes" comment="" />
+      <created>1702351533670</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1702351533670</updated>
+      <workItem from="1702351535063" duration="2077000" />
+    </task>
+    <task id="LOCAL-00001" summary="Create simple TcpSensor to send random data to server">
+      <option name="closed" value="true" />
+      <created>1702352947599</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1702352947599</updated>
+    </task>
+    <task id="LOCAL-00002" summary="git ignore">
+      <option name="closed" value="true" />
+      <created>1702353102494</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1702353102494</updated>
+    </task>
+    <task id="LOCAL-00003" summary="remove file">
+      <option name="closed" value="true" />
+      <created>1702353151520</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1702353151520</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Create simple TcpSensor to send random data to server" />
+    <MESSAGE value="git ignore" />
+    <MESSAGE value="remove file" />
+    <option name="LAST_COMMIT_MESSAGE" value="remove file" />
+  </component>
+</project>
