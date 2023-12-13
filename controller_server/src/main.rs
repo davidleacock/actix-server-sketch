@@ -88,7 +88,7 @@ async fn main() -> std::io::Result<()> {
         }
 
         _ = signal::ctrl_c() => {
-            println!("Controller shutting down...")
+            println!("Controller shutting down....")
         }
     }
 
