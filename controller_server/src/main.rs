@@ -29,7 +29,7 @@ async fn tcp_handler(mut stream: TcpStream) -> std::io::Result<()> {
         }
     };
 
-    println!("Sensor connected - Id = {}, Name = {}", sensor.id, sensor.name);
+    println!("Sensor: {} connected - id:{}", sensor.name, sensor.id);
     buffer.clear();
     loop {
         let bytes_read = reader.read_until(b'\n', &mut buffer).await?;
@@ -42,7 +42,6 @@ async fn tcp_handler(mut stream: TcpStream) -> std::io::Result<()> {
         println!("Sensor: {} - Data: {}", sensor.name, message);
         buffer.clear();
     }
-
     Ok(())
 }
 
@@ -92,7 +91,6 @@ async fn main() -> std::io::Result<()> {
             println!("Controller shutting down...")
         }
     }
-
 
     Ok(())
 }
