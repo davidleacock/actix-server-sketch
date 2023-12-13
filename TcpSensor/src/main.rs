@@ -14,7 +14,6 @@ struct Sensor {
     name: String
 }
 
-
 fn main() -> Result<(), Error> {
     let mut rng = rand::thread_rng();
     let sensor_id = Uuid::new_v4();
