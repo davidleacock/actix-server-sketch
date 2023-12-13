@@ -1,25 +1,19 @@
 use std::io::{Error, ErrorKind};
-use std::net::TcpListener;
-
-use actix_server::Server;
-use actix_service::fn_service;
 use actix_web::{App, HttpResponse, HttpServer, web};
-use futures::try_join;
 use serde::Deserialize;
 use serde_json;
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::net::TcpStream;
+use tokio::net::{TcpListener, TcpStream};
 use uuid::Uuid;
+use tokio::signal;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug)]
 struct Sensor {
     id: Uuid,
     name: String,
 }
 
-type SensorMap = Arc<Mutex<HashMap<Uuid, Sensor>>>;
-
-async fn tcp_handler(mut stream: TcpStream, sensors: SensorMap) -> std::io::Result<()> {
+async fn tcp_handler(mut stream: TcpStream) -> std::io::Result<()> {
     let (reader, _writer) = stream.split();
     let mut reader = BufReader::new(reader);
     let mut buffer = Vec::new();
@@ -36,16 +30,16 @@ async fn tcp_handler(mut stream: TcpStream, sensors: SensorMap) -> std::io::Resu
     };
 
     println!("Sensor connected - Id = {}, Name = {}", sensor.id, sensor.name);
-
+    buffer.clear();
     loop {
         let bytes_read = reader.read_until(b'\n', &mut buffer).await?;
         if bytes_read == 0 {
-            println!("TCP Connection closed");
+            println!("Sensor: {} - TCP Connection closed", sensor.name);
             break;
         }
 
-        let message = String::from_utf8_lossy(&buffer[..bytes_read]);
-        println!("Sensor Data: {}", message);
+        let message = String::from_utf8(buffer.clone()).unwrap_or_default();
+        println!("Sensor: {} - Data: {}", sensor.name, message);
         buffer.clear();
     }
 
@@ -57,14 +51,19 @@ async fn http_handler() -> HttpResponse {
     HttpResponse::Ok().body("Sensor data coming soon...")
 }
 
-#[actix_rt::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:3000").unwrap();
-
-    let tcp_server = Server::build()
-        .listen("tcp_server", listener, || fn_service(tcp_handler))
-        .expect("Server failed to run")
-        .run();
+    let tcp_server = tokio::spawn(async move {
+        let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
+        loop {
+            let (stream, _) = listener.accept().await.unwrap();
+            tokio::spawn(async move {
+                if let Err(e) = tcp_handler(stream).await {
+                    eprintln!("Failed to handle connection: {}", e);
+                }
+            });
+        }
+    });
 
     let http_server = HttpServer::new(|| {
         App::new().route("/", web::get().to(http_handler))
@@ -74,7 +73,26 @@ async fn main() -> std::io::Result<()> {
 
     println!("Controller running on 127.0.0.1:3000 (TCP) and 127.0.0.1:8080 (HTTP)");
 
-    try_join!(tcp_server, http_server)?;
+    tokio::select! {
+        tcp_result = tcp_server => {
+              if let Err(e) = tcp_result {
+                eprintln!("Unable to start TCP Server. Err = {}", e);
+                return Err(Error::new(ErrorKind::Other, "TCP Server Error"));
+            }
+        }
+
+        http_result = http_server => {
+            if let Err(e) = http_result {
+                eprintln!("Unable to start HTTP Server. Err = {}", e);
+                return Err(Error::new(ErrorKind::Other, "HTTP Server Error"));
+            }
+        }
+
+        _ = signal::ctrl_c() => {
+            println!("Controller shutting down...")
+        }
+    }
+
 
     Ok(())
 }
