@@ -17,7 +17,7 @@ struct Sensor {
 fn main() -> Result<(), Error> {
     let mut rng = rand::thread_rng();
     let sensor_id = Uuid::new_v4();
-    let sensor_name = env::var("NAME").expect("NAME not provided.");
+    let sensor_name = env::var("NAME").unwrap_or(String::from("no_name"));
     let controller_address = env::var("CTRL_ADDR").expect("CTRL_ADDR not provided.");
 
     let sensor = Sensor {
