@@ -22,7 +22,7 @@ fn main() -> Result<(), Error> {
 
     let sensor = Sensor {
         id: sensor_id,
-        name: sensor_name,
+        name: sensor_name.clone(),
     };
 
     let serialized_sensor = serde_json::to_string(&sensor).expect("Failed to serialize Sensor.");
@@ -38,7 +38,7 @@ fn main() -> Result<(), Error> {
     loop {
         let data = rng.gen_range(0..100);
 
-        println!("Current sensor: {}", data);
+        println!("Sensor: {} current value: {}", &sensor_name, data);
 
         if let Err(e) = writeln!(stream, "{}", data) {
             eprintln!("Failed to write to stream: {} - shutting down", e);
