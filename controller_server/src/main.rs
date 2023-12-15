@@ -52,7 +52,20 @@ async fn tcp_handler(mut stream: TcpStream) -> std::io::Result<()> {
 // TODO Add the data in from the sensors
 async fn http_handler() -> HttpResponse {
     println!("Http endpoint called");
-    HttpResponse::Ok().body("Sensor data coming soon...")
+
+    let html_content = r#"
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <title>Controller</title>
+        </head>
+        <body>
+            <h1>Controller Server...</h1>
+        </body>
+        </html>
+    "#;
+
+    HttpResponse::Ok().content_type("text/html").body(html_content)
 }
 
 #[tokio::main]
