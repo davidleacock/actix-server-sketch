@@ -1,11 +1,15 @@
 use std::io::{Error, ErrorKind};
+use std::time::Duration;
+
 use actix_web::{App, HttpResponse, HttpServer, web};
+use env_logger;
+use libmdns::Responder;
 use serde::Deserialize;
 use serde_json;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
-use uuid::Uuid;
 use tokio::signal;
+use uuid::Uuid;
 
 #[derive(Deserialize, Clone, Debug)]
 struct Sensor {
@@ -45,6 +49,7 @@ async fn tcp_handler(mut stream: TcpStream) -> std::io::Result<()> {
     Ok(())
 }
 
+// TODO Add the data in from the sensors
 async fn http_handler() -> HttpResponse {
     println!("Http endpoint called");
     HttpResponse::Ok().body("Sensor data coming soon...")
@@ -52,11 +57,34 @@ async fn http_handler() -> HttpResponse {
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
+    let mut builder = env_logger::Builder::new();
+    builder.parse_filters("libmdns=debug");
+    builder.init();
+
+    // TODO check if I need to keep rebuilding this
+    tokio::task::spawn(async {
+        loop {
+            println!("Advertising network");
+            let responder = Responder::new().unwrap();
+            let _service = responder.register(
+                "_controller-server._tcp".to_owned(),
+                "ControllerServer".to_owned(),
+                3000, // TODO this could be a configurable param
+                &["path=/"]
+            );
+
+            // Keep the service registered for a certain duration
+            tokio::time::sleep(Duration::from_secs(5)).await;
+            // The loop will then re-register the service
+        }
+    });
+
     let tcp_server = tokio::spawn(async move {
-        let listener = TcpListener::bind("127.0.0.1:3000").await.unwrap();
+        let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
         loop {
             let (stream, _) = listener.accept().await.unwrap();
             tokio::spawn(async move {
+                println!("Connection discovered");
                 if let Err(e) = tcp_handler(stream).await {
                     eprintln!("Failed to handle connection: {}", e);
                 }
