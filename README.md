@@ -1,6 +1,6 @@
 # actix-server-sketch
 
-### Experimenting with actix tcp/http server
+### Experimenting with actix tcp/http server + mDNS for server discovery
 
 
 
