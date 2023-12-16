@@ -8,6 +8,7 @@ use env_logger;
 use futures::stream;
 use futures::stream::Stream;
 use actix_cors::Cors;
+use actix_server::Server;
 
 use libmdns::Responder;
 use serde::{Deserialize, Serialize};
@@ -72,7 +73,6 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
 
 fn stream_sensor_state(sensor_state: SensorState) -> impl Stream<Item=Result<web::Bytes, ActixError>> {
     stream::unfold(sensor_state, |state| async {
-
         time::sleep(Duration::from_secs(3)).await;
 
         let json = {
@@ -92,13 +92,29 @@ async fn http_handler(sensor_state: SensorState) -> HttpResponse {
         .streaming(stream_sensor_state(sensor_state))
 }
 
+async fn tcp_server(sensor_state: SensorState) -> std::io::Result<()> {
+    let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    loop {
+        let (stream, _) = listener.accept().await.unwrap();
+        let data = sensor_state.clone();
+        tokio::spawn(async move {
+            println!("Connection discovered");
+            if let Err(e) = tcp_handler(stream, data).await {
+                eprintln!("Failed to handle connection: {}", e);
+            }
+        });
+    }
+}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let mut builder = env_logger::Builder::new();
     builder.parse_filters("libmdns=debug");
     builder.init();
 
-    // TODO check if I need to keep rebuilding this
+    let sensor_state: SensorState = Arc::new(Mutex::new(HashMap::new()));
+
+    // I need to keep registering the service otherwise the tcp sensors don't seem to connect
     tokio::task::spawn(async {
         loop {
             let responder = Responder::new().unwrap();
@@ -115,37 +131,22 @@ async fn main() -> std::io::Result<()> {
         }
     });
 
-    async fn tcp_server(sensor_state: SensorState) -> std::io::Result<()> {
-        let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
-        loop {
-            let (stream, _) = listener.accept().await.unwrap();
-            let data = sensor_state.clone();
-            tokio::spawn(async move {
-                println!("Connection discovered");
-                if let Err(e) = tcp_handler(stream, data).await {
-                    eprintln!("Failed to handle connection: {}", e);
-                }
-            });
-        }
-    }
-
-    let sensor_state: SensorState = Arc::new(Mutex::new(HashMap::new()));
-
     let tcp_server = tokio::spawn(tcp_server(sensor_state.clone()));
 
-    let http_server = HttpServer::new(move || {
-        let state_clone = sensor_state.clone();
-        App::new()
-            .wrap(Cors::permissive())
-            .route("/display", web::get().to(move || {
-            let state = state_clone.clone();
-            async move {
-                http_handler(state).await
-            }
-        }))
-    })
-        .bind("127.0.0.1:8080")?
-        .run();
+    let http_server =
+        HttpServer::new(move || {
+            let state_clone = sensor_state.clone();
+            App::new()
+                .wrap(Cors::permissive())
+                .route("/display", web::get().to(move || {
+                    let state = state_clone.clone();
+                    async move {
+                        http_handler(state).await
+                    }
+                }))
+        })
+            .bind("127.0.0.1:8080")?
+            .run();
 
     println!("Controller running on 127.0.0.1:3000 (TCP) and 127.0.0.1:8080 (HTTP)");
 
