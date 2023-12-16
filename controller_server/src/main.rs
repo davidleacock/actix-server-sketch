@@ -3,16 +3,12 @@ use std::io::{Error, ErrorKind};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use actix_web::{App, Error as ActixError, HttpResponse, HttpServer, web};
-use env_logger;
+use actix_cors::Cors;
+use actix_web::{web, App, Error as ActixError, HttpResponse, HttpServer};
 use futures::stream;
 use futures::stream::Stream;
-use actix_cors::Cors;
-use actix_server::Server;
-
 use libmdns::Responder;
 use serde::{Deserialize, Serialize};
-use serde_json;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::signal;
@@ -36,10 +32,13 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
     reader.read_until(b'\n', &mut buffer).await?;
     let metadata = String::from_utf8(buffer.clone()).unwrap_or_default();
 
-    let sensor: Sensor = match serde_json::from_str(&metadata.trim()) {
+    let sensor: Sensor = match serde_json::from_str(metadata.trim()) {
         Ok(sensor) => sensor,
         Err(e) => {
-            eprintln!("Unable to deserialize metadata, connection closed. Err = {}", e);
+            eprintln!(
+                "Unable to deserialize metadata, connection closed. Err = {}",
+                e
+            );
             return Err(Error::new(ErrorKind::InvalidData, "Invalid sensor data"));
         }
     };
@@ -49,7 +48,10 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
     loop {
         let bytes_read = reader.read_until(b'\n', &mut buffer).await?;
         if bytes_read == 0 {
-            println!("Sensor: {} - TCP Connection closed - Removing from state", sensor.name);
+            println!(
+                "Sensor: {} - TCP Connection closed - Removing from state",
+                sensor.name
+            );
             let mut data = sensor_state.lock().unwrap();
             data.remove(&sensor.id);
             break;
@@ -63,7 +65,7 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
         if let Some(sensor) = sensors.get_mut(&sensor.id) {
             sensor.value = sensor_value.trim().parse::<u32>().unwrap_or(99999);
         } else {
-            sensors.insert(sensor.id.clone(), sensor.clone());
+            sensors.insert(sensor.id, sensor.clone());
         }
 
         buffer.clear();
@@ -71,7 +73,9 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
     Ok(())
 }
 
-fn stream_sensor_state(sensor_state: SensorState) -> impl Stream<Item=Result<web::Bytes, ActixError>> {
+fn stream_sensor_state(
+    sensor_state: SensorState,
+) -> impl Stream<Item = Result<web::Bytes, ActixError>> {
     stream::unfold(sensor_state, |state| async {
         time::sleep(Duration::from_secs(3)).await;
 
@@ -133,20 +137,18 @@ async fn main() -> std::io::Result<()> {
 
     let tcp_server = tokio::spawn(tcp_server(sensor_state.clone()));
 
-    let http_server =
-        HttpServer::new(move || {
-            let state_clone = sensor_state.clone();
-            App::new()
-                .wrap(Cors::permissive())
-                .route("/display", web::get().to(move || {
-                    let state = state_clone.clone();
-                    async move {
-                        http_handler(state).await
-                    }
-                }))
-        })
-            .bind("127.0.0.1:8080")?
-            .run();
+    let http_server = HttpServer::new(move || {
+        let state_clone = sensor_state.clone();
+        App::new().wrap(Cors::permissive()).route(
+            "/display",
+            web::get().to(move || {
+                let state = state_clone.clone();
+                async move { http_handler(state).await }
+            }),
+        )
+    })
+    .bind("127.0.0.1:8080")?
+    .run();
 
     println!("Controller running on 127.0.0.1:3000 (TCP) and 127.0.0.1:8080 (HTTP)");
 
