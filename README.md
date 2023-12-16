@@ -7,7 +7,7 @@
 `cargo run`
 
 This will start up the ControllerServer on localhost:3000 <br>
-Data will be displayed on the `localhost:8080` endpoint <br><br>
+Sensor data is displayed on the `localhost:8080/display` endpoint <br><br>
 
 
 
