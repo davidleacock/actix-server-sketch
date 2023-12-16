@@ -17,6 +17,7 @@ use uuid::Uuid;
 struct Sensor {
     id: Uuid,
     name: String,
+    value: u32
 }
 
 #[tokio::main]
@@ -28,6 +29,7 @@ async fn main() -> Result<(), Error> {
     let sensor = Sensor {
         id: sensor_id,
         name: sensor_name.clone(),
+        value: 0
     };
 
     let serialized_sensor = serde_json::to_string(&sensor).expect("Failed to serialize Sensor.");

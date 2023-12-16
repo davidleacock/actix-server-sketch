@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Controller Display</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Sensor Data</h1>
+<table id="sensorTable">
+    <tr>
+        <th>Sensor Id</th>
+        <th>Name</th>
+        <th>Current Value</th>
+    </tr>
+</table>
+
+<script>
+    const eventSource = new EventSource("http://localhost:8080/display");
+    const sensorTable = document.getElementById('sensorTable');
+
+    eventSource.onmessage = function (event) {
+        const sensors = JSON.parse(event.data);
+        let tableContents = `
+                <tr>
+                    <th>Sensor ID</th>
+                    <th>Name</th>
+                    <th>Value</th>
+                </tr>`;
+
+        for (const [sensorId, sensor] of Object.entries(sensors)) {
+            tableContents += `
+                <tr>
+                    <td>${sensorId}</td>
+                    <td>${sensor.name}</td>
+                    <td>${sensor.value}</td>
+                </tr>
+            `;
+        }
+        sensorTable.innerHTML = tableContents;
+    };
+</script>
+</body>
+</html>
