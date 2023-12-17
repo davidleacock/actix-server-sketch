@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use actix_cors::Cors;
-use actix_web::{web, App, Error as ActixError, HttpResponse, HttpServer};
+use actix_web::{web, App, Error as ActixError, HttpResponse, HttpServer, Responder as ActixResponder};
 use futures::stream;
 use futures::stream::Stream;
 use libmdns::Responder;
@@ -75,7 +75,7 @@ async fn tcp_handler(mut stream: TcpStream, sensor_state: SensorState) -> std::i
 
 fn stream_sensor_state(
     sensor_state: SensorState,
-) -> impl Stream<Item = Result<web::Bytes, ActixError>> {
+) -> impl Stream<Item=Result<web::Bytes, ActixError>> {
     stream::unfold(sensor_state, |state| async {
         time::sleep(Duration::from_secs(3)).await;
 
@@ -90,20 +90,34 @@ fn stream_sensor_state(
     })
 }
 
-async fn http_handler(sensor_state: SensorState) -> HttpResponse {
+async fn display_handler(sensor_state: web::Data<SensorState>) -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/event-stream")
-        .streaming(stream_sensor_state(sensor_state))
+        .streaming(stream_sensor_state(sensor_state.get_ref().clone()))
 }
 
-async fn tcp_server(sensor_state: SensorState) -> std::io::Result<()> {
+async fn update_sensor_handler(sensor: web::Json<Sensor>, sensor_state: web::Data<SensorState>) -> impl ActixResponder {
+    let mut sensors = sensor_state.lock().unwrap();
+
+    sensors.entry(sensor.id)
+        .and_modify(|s| s.value = sensor.value)
+        .or_insert_with(|| Sensor {
+            id: sensor.id,
+            name: sensor.name.clone(),
+            value: sensor.value,
+        });
+
+    HttpResponse::Ok().body("Controller Received Updated")
+}
+
+async fn tcp_server(sensor_state: web::Data<SensorState>) -> std::io::Result<()> {
     let listener = TcpListener::bind("0.0.0.0:3000").await.unwrap();
     loop {
         let (stream, _) = listener.accept().await.unwrap();
         let data = sensor_state.clone();
         tokio::spawn(async move {
             println!("Connection discovered");
-            if let Err(e) = tcp_handler(stream, data).await {
+            if let Err(e) = tcp_handler(stream, data.get_ref().clone()).await {
                 eprintln!("Failed to handle connection: {}", e);
             }
         });
@@ -116,7 +130,7 @@ async fn main() -> std::io::Result<()> {
     builder.parse_filters("libmdns=debug");
     builder.init();
 
-    let sensor_state: SensorState = Arc::new(Mutex::new(HashMap::new()));
+    let sensor_state = web::Data::new(Arc::new(Mutex::new(HashMap::new())));
 
     // I need to keep registering the service otherwise the tcp sensors don't seem to connect
     tokio::task::spawn(async {
@@ -139,16 +153,18 @@ async fn main() -> std::io::Result<()> {
 
     let http_server = HttpServer::new(move || {
         let state_clone = sensor_state.clone();
-        App::new().wrap(Cors::permissive()).route(
-            "/display",
-            web::get().to(move || {
-                let state = state_clone.clone();
-                async move { http_handler(state).await }
-            }),
-        )
+        App::new()
+            .wrap(Cors::permissive())
+            .route(
+                "/display",
+                web::get().to(move || {
+                    let state = state_clone.clone();
+                    async move { display_handler(state).await }
+                }))
+            .route("/update", web::post().to(update_sensor_handler))
     })
-    .bind("127.0.0.1:8080")?
-    .run();
+        .bind("127.0.0.1:8080")?
+        .run();
 
     println!("Controller running on 127.0.0.1:3000 (TCP) and 127.0.0.1:8080 (HTTP)");
 
