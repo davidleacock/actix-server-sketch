@@ -1,0 +1,19 @@
+[package]
+name = "http_sensor"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+uuid = {version = "1.6.1", features = ["v4", "serde"]}
+actix-server = "2.3.0"
+actix-service = "2.0"
+actix-web = "4.4.0"
+#actix-cors = "0.6.5"
+rand = "0.8.5"
+libmdns = "0.7.5"
+tokio = { version = "1", features = ["full"] }
+
