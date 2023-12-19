@@ -20,7 +20,7 @@ async fn main() -> std::io::Result<()> {
                 "_sensor._tcp".to_owned(),
                 sensor_name.to_owned(),
                 sensor_port.parse().unwrap(),
-                &["path=/datum"]
+                &["path=/datum"] // TODO
             );
     //         // Keep the service registered for a certain duration
     //         tokio::time::sleep(Duration::from_secs(5)).await;
